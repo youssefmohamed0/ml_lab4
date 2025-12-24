@@ -121,3 +121,77 @@ class ClusteringMetrics:
                 distances = np.sum((cluster_points - centroid) ** 2)
                 wcss += distances
         return wcss
+    
+    def comb2(self,n):
+        """Calculates n choose 2, which is n*(n-1)/2."""
+        return n * (n - 1) / 2 if n >= 2 else 0
+
+    def adjusted_rand_index_scratch(self,labels_true, labels_pred):
+        labels_true = np.array(labels_true)
+        labels_pred = np.array(labels_pred)
+        n = len(labels_true)
+        
+        # 1. Get unique classes and clusters
+        classes = np.unique(labels_true)
+        clusters = np.unique(labels_pred)
+        
+        # 2. Build the Contingency Table (n_ij)
+        # Rows represent true classes, columns represent predicted clusters
+        contingency = np.zeros((len(classes), len(clusters)))
+        for i, c in enumerate(classes):
+            for j, k in enumerate(clusters):
+                contingency[i, j] = np.sum((labels_true == c) & (labels_pred == k))
+        
+        # 3. Calculate the sums of combinations
+        sum_comb_nij = np.sum([self.comb2(cell) for cell in contingency.flatten()])
+        sum_comb_ai = np.sum([self.comb2(row_sum) for row_sum in np.sum(contingency, axis=1)])
+        sum_comb_bj = np.sum([self.comb2(col_sum) for col_sum in np.sum(contingency, axis=0)])
+        
+        # 4. Apply the ARI Formula
+        expected_index = (sum_comb_ai * sum_comb_bj) / self.comb2(n)
+        max_index = 0.5 * (sum_comb_ai + sum_comb_bj)
+        
+        # Handle the case where denominator is 0 (all points in one cluster)
+        if max_index == expected_index:
+            return 0.0
+            
+        ari = (sum_comb_nij - expected_index) / (max_index - expected_index)
+        return ari
+
+    def calculate_purity(self, labels_true, labels_pred):
+        """
+        Calculates the purity score for clustering results.
+        
+        Parameters:
+        labels_true (list-like): Ground truth class labels.
+        labels_pred (list-like): Cluster labels to be evaluated.
+        
+        Returns:
+        float: Purity score between 0.0 and 1.0 (1.0 is perfect).
+        """
+        labels_true = np.array(labels_true)
+        labels_pred = np.array(labels_pred)
+        
+        # 1. Get unique cluster IDs
+        clusters = np.unique(labels_pred)
+        total_samples = len(labels_true)
+        
+        total_correct = 0
+        
+        # 2. For each cluster, find the most frequent ground truth label
+        for k in clusters:
+            # Get ground truth labels for points in the current cluster
+            indices = np.where(labels_pred == k)
+            ground_truth_in_cluster = labels_true[indices]
+            
+            if len(ground_truth_in_cluster) == 0:
+                continue
+                
+            # Find the count of the most common class in this cluster
+            # unique_counts[1] gives the frequencies
+            _, counts = np.unique(ground_truth_in_cluster, return_counts=True)
+            total_correct += np.max(counts)
+        
+        # 3. Calculate final purity
+        purity_score = total_correct / total_samples
+        return purity_score
