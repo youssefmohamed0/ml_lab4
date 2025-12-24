@@ -111,21 +111,6 @@ class ClusteringMetrics:
         # Final CH Formula: (BCSS / (k-1)) / (WCSS / (n - k))
         score = (bcss / (k - 1)) / (wcss / (n_samples - k))
         return score
-
-    def plot_clusters(self,data, clusters, centroids):
-        for k in range(len(centroids)):
-            cluster_points = data[clusters == k]
-            plt.scatter(cluster_points[:, 0], cluster_points[:, 1], s=20, label=f"Cluster {k}")
-
-        plt.scatter(centroids[:, 0], centroids[:, 1], 
-                    s=200, marker='X', label="Centroids")
-
-        plt.title("After Clustering")
-        plt.xlabel("Feature 1")
-        plt.ylabel("Feature 2")
-        plt.legend()
-        plt.show()
-
     
     def within_cluster_sum(self, final_centroids, X, clusters):
         wcss = 0
@@ -137,4 +122,3 @@ class ClusteringMetrics:
                 distances = np.sum((cluster_points - centroid) ** 2)
                 wcss += distances
         return wcss
-
