@@ -110,3 +110,14 @@ class ClusteringMetrics:
         # Final CH Formula: (BCSS / (k-1)) / (WCSS / (n - k))
         score = (bcss / (k - 1)) / (wcss / (n_samples - k))
         return score
+    
+    def within_cluster_sum(self, final_centroids, X, clusters):
+        wcss = 0
+        for idx, centroid in enumerate(final_centroids):
+            # Filter points belonging to the current cluster
+            cluster_points = X[clusters == idx]
+            # Sum of squared Euclidean distances
+            if len(cluster_points) > 0:
+                distances = np.sum((cluster_points - centroid) ** 2)
+                wcss += distances
+        return wcss
