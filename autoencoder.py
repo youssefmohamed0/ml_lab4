@@ -111,15 +111,6 @@ class Autoencoder:
         """
         Forward pass through the autoencoder
 
-        Parameters:
-        -----------
-        X : ndarray of shape (batch_size, input_dim)
-            Input data
-
-        Returns:
-        --------
-        reconstruction : ndarray of shape (batch_size, input_dim)
-            Reconstructed data
         """
         self.cache = {}
         self.cache['A_0'] = X
@@ -169,17 +160,6 @@ class Autoencoder:
         """
         Compute Mean Squared Error loss with L2 regularization
 
-        Parameters:
-        -----------
-        X : ndarray of shape (batch_size, input_dim)
-            Original input
-        X_reconstructed : ndarray of shape (batch_size, input_dim)
-            Reconstructed output
-
-        Returns:
-        --------
-        loss : float
-            Total loss (MSE + L2 regularization)
         """
         m = X.shape[0]
 
@@ -213,17 +193,6 @@ class Autoencoder:
         """
         Backward pass - compute gradients using backpropagation
 
-        Parameters:
-        -----------
-        X : ndarray of shape (batch_size, input_dim)
-            Original input
-        X_reconstructed : ndarray of shape (batch_size, input_dim)
-            Reconstructed output
-
-        Returns:
-        --------
-        gradients : dict
-            Dictionary containing gradients for all parameters
         """
         m = X.shape[0]
         gradients = {}
@@ -305,12 +274,7 @@ class Autoencoder:
         """
         Update learning rate based on schedule
         Its job is to decrease the learning rate as training progresses to prevent overshooting.
-        Parameters:
-        -----------
-        epoch : int
-            Current epoch number
-        schedule : str
-            Type of schedule ('step', 'exponential', 'cosine')
+
         """
         if schedule == 'step':
             # Reduce LR by factor of 10 every 50 epochs
@@ -342,23 +306,6 @@ class Autoencoder:
         """
         Train the autoencoder using mini-batch gradient descent
 
-        Parameters:
-        -----------
-        X_train : ndarray of shape (n_samples, input_dim)
-            Training data
-        epochs : int
-            Number of training epochs
-        batch_size : int
-            Size of mini-batches
-        lr_schedule : str
-            Learning rate schedule type
-        verbose : bool
-            Whether to print training progress
-
-        Returns:
-        --------
-        history : dict
-            Dictionary containing training history (losses)
         """
         n_samples = X_train.shape[0]
         history = {'total_loss': [],
