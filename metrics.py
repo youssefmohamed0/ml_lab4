@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix as sklearn_cm
+from scipy.optimize import linear_sum_assignment
 
 class ClusteringMetrics:
     @staticmethod
@@ -241,3 +243,29 @@ class ClusteringMetrics:
 
         nmi = (2 * mi) / (h_true + h_pred)
         return nmi
+
+def _align_labels(y_true, y_pred):
+
+    # map cluster indices to the true labels using the Hungarian algorithm
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+    D = max(y_pred.max(), y_true.max()) + 1
+    w = np.zeros((D, D), dtype=np.int64)
+    for i in range(y_pred.size):
+        w[y_pred[i], y_true[i]] += 1
+    row_ind, col_ind = linear_sum_assignment(w.max() - w)
+    
+    # Create the mapping
+    new_y_pred = np.zeros_like(y_pred)
+    for i, j in zip(row_ind, col_ind):
+        new_y_pred[y_pred == i] = j
+    
+    return new_y_pred
+
+def get_confusion_matrix(y_true, y_pred):
+    # Align the predicted cluster labels to the true labels
+    y_pred_aligned = _align_labels(y_true, y_pred)
+    
+    # Calculate the matrix using sklearn
+    cm = sklearn_cm(y_true, y_pred_aligned)
+    return cm
