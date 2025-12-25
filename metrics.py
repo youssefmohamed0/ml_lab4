@@ -196,3 +196,48 @@ class ClusteringMetrics:
         # 3. Calculate final purity
         purity_score = total_correct / total_samples
         return purity_score
+    
+    def normalized_mutual_info_score_scratch(self, labels_true, labels_pred):
+        """Computes Normalized Mutual Information (NMI) between two labelings."""
+        from math import log2
+
+        labels_true = np.array(labels_true)
+        labels_pred = np.array(labels_pred)
+
+        n = len(labels_true)
+        if n == 0:
+            return 0.0
+
+        # 1. Calculate the contingency table
+        unique_true = np.unique(labels_true)
+        unique_pred = np.unique(labels_pred)
+
+        contingency = np.zeros((len(unique_true), len(unique_pred)))
+        for i, true_label in enumerate(unique_true):
+            for j, pred_label in enumerate(unique_pred):
+                contingency[i, j] = np.sum((labels_true == true_label) & (labels_pred == pred_label))
+
+        # 2. Calculate the marginal sums
+        sum_rows = np.sum(contingency, axis=1)
+        sum_cols = np.sum(contingency, axis=0)
+
+        # 3. Calculate mutual information
+        mi = 0.0
+        for i in range(len(unique_true)):
+            for j in range(len(unique_pred)):
+                if contingency[i, j] > 0:
+                    pij = contingency[i, j] / n
+                    pi = sum_rows[i] / n
+                    pj = sum_cols[j] / n
+                    mi += pij * log2(pij / (pi * pj))
+
+        # 4. Calculate entropies
+        h_true = -np.sum([(sum_rows[i] / n) * log2(sum_rows[i] / n) for i in range(len(unique_true)) if sum_rows[i] > 0])
+        h_pred = -np.sum([(sum_cols[j] / n) * log2(sum_cols[j] / n) for j in range(len(unique_pred)) if sum_cols[j] > 0])
+
+        # 5. Normalize mutual information
+        if h_true + h_pred == 0:
+            return 0.0
+
+        nmi = (2 * mi) / (h_true + h_pred)
+        return nmi
